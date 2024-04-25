@@ -50,6 +50,7 @@ int main(){
         break;
     // Обрабатываем данные
     default:
+        ;
         char ip_str[INET_ADDRSTRLEN];
         if (inet_ntop(AF_INET, &(new_endpoint.sin_addr.s_addr), ip_str, INET_ADDRSTRLEN) == NULL) {
             perror("inet_ntop() failed");
