@@ -110,7 +110,7 @@ void* listener_thread(void* args){
             }
             break;
         }
-        fprintf(stderr, "Listener\t\t\ttip[%*s]\tport[%5d]\tredirected the connection to Service\tpool[%p]\tip[%*s]\tport[%5d]\n", 
+        fprintf(stderr, "Listener\t\t\tip[%*s]\tport[%5d]\tredirected the connection to Service\tpool[%p]\tip[%*s]\tport[%5d]\n", 
             INET_ADDRSTRLEN, SERV_IP_S, ntohs(me->endpoint.sin_port),
             (void*)(me->pool), INET_ADDRSTRLEN, SERV_IP_S, ntohs(service->socket_endpoint.sin_port));
         // ПРОВЕРКИ НА ФАКТ ОТПРАВКИ ДАННЫХ НЕТ

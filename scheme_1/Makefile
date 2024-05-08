@@ -18,7 +18,7 @@ subdirs:
 
 all: server client
 
-server:
+server: | subdirs
 	$(MAKE) --no-print-directory -C $(SRC_DIR)/server CC=$(CC) \
 	CFLAGS="$(CFLAGS)" MAIN_DIR=$(MAIN_DIR) INC_DIR=$(INC_DIR) OBJ_DIR=$(OBJ_DIR) BIN_DIR=$(BIN_DIR) all
 
@@ -26,7 +26,7 @@ clean_server:
 	$(MAKE) --no-print-directory -C $(SRC_DIR)/server CC=$(CC) \
 	CFLAGS="$(CFLAGS)" MAIN_DIR=$(MAIN_DIR) INC_DIR=$(INC_DIR) OBJ_DIR=$(OBJ_DIR) BIN_DIR=$(BIN_DIR) clean
 
-client:
+client: | subdirs
 	$(MAKE) --no-print-directory -C $(SRC_DIR)/client CC=$(CC) \
 	CFLAGS="$(CFLAGS)" MAIN_DIR=$(MAIN_DIR) INC_DIR=$(INC_DIR) OBJ_DIR=$(OBJ_DIR) BIN_DIR=$(BIN_DIR) all
 
