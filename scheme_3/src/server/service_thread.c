@@ -175,7 +175,7 @@ void* service_thread(void* _pool){
         
         // Блокирующе ждём сообщения из очереди
         unsigned int prio;
-        if (mq_receive(pool->queue_des, (char*)&received_request, sizeof(ServiceRequest), &prio) == -1){
+        if (mq_receive(pool->queue_des, (char*)&received_request, sizeof(struct ServiceRequest), &prio) == -1){
             // Если функция была прервана сигналом
             pthread_mutex_lock(&(pool->mutex));
             if (errno == EINTR){
@@ -197,7 +197,7 @@ void* service_thread(void* _pool){
                 }
             }
             // Необработанная критическая ошибка
-            perror("accept() in service_thread()");
+            perror("mq_receive() in service_thread()");
 
             list_remove_node((List*)&(pool->ready_list), (Node*)(me));
             list_append_node((List*)&(pool->dead_list), (Node*)(me));
@@ -520,10 +520,18 @@ NO Thread Safety!
 int service_pool_free(ServicePool* pool){
     pthread_mutex_destroy(&(pool->mutex));
 
+    // Закрытие очереди
     if (mq_close(pool->queue_des) != 0){
         perror("mq_close() in service_pool_free()\n");
         return EXIT_FAILURE;
     }
+
+    // Удаление очереди
+    if (mq_unlink(pool->queue_path) == -1) {
+        perror("mq_unlink() in service_pool_free()");
+        return EXIT_FAILURE;
+    }
+
     free(pool);
     return 0;
 }

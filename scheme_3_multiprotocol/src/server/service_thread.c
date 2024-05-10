@@ -109,7 +109,6 @@ int connect_multiprotocol_connection(int stream_fd, int dgram_fd, struct sockadd
         // Ожидание событий на stream сокете
         if (sock_type == SOCK_STREAM) {
             if (connect(stream_fd, (struct sockaddr*)client_endpoint, size) == -1){
-                printf("--HUI 1\n");
                 if (errno == EWOULDBLOCK || errno == EAGAIN) {
                     // Нет входящих соединений
                     continue;
@@ -127,7 +126,6 @@ int connect_multiprotocol_connection(int stream_fd, int dgram_fd, struct sockadd
             memset(buffer, 0, SERV_BUFFER_SZ);
             int bytes_received = sendto(dgram_fd, (void*)buffer, SERV_BUFFER_SZ, 0, (const struct sockaddr*)client_endpoint, size);
             if (bytes_received == -1) {
-                printf("--HUI 2\n");
                 if (errno == EWOULDBLOCK || errno == EAGAIN) {
                     // Нет входящих соединений
                     continue;
@@ -294,8 +292,6 @@ void* service_thread(void* _pool){
         fprintf(stderr, "Service\tpool[%p]\tip[%*s]\tport[%5d]\tis ready\n", (void*)pool, INET_ADDRSTRLEN, SERV_IP_S, 0);
         pthread_mutex_unlock(&(pool->mutex));
 
-        printf("--READY\n");
-
         // Блокирующе ждём сообщения из очереди
         unsigned int prio;
         if (mq_receive(pool->queue_des, (char*)&received_request, sizeof(ServiceRequest), &prio) == -1){
@@ -332,8 +328,6 @@ void* service_thread(void* _pool){
 
             pthread_exit((void*)EXIT_FAILURE);
         }
-
-        printf("--QUEUE pick up\n");
 
         // Проверяем, есть ли сигнал завершения
         pthread_mutex_lock(&(pool->mutex));
@@ -384,8 +378,6 @@ void* service_thread(void* _pool){
         me->client_endpoint.sin_port = received_request.net_port;
         me->client_endpoint.sin_zero[0] = '\0';
 
-        printf("--READY TO CONNECT\n");
-
         res = connect_multiprotocol_connection(stream_fd, dgram_fd, (struct sockaddr_in*)&(me->client_endpoint), received_request.sock_type);
         if (res < 0) {
             pthread_mutex_lock(&(pool->mutex));
@@ -408,8 +400,6 @@ void* service_thread(void* _pool){
                 pthread_exit((void*)EXIT_FAILURE);
             }
         }
-
-        printf("--CONNECTED\n");
 
         int multi_fd = received_request.sock_type == SOCK_STREAM ? stream_fd : dgram_fd;
 
@@ -471,8 +461,6 @@ void* service_thread(void* _pool){
                 pthread_exit((void*)EXIT_FAILURE);
             }
         }
-
-        printf("--TIME SENDED, END\n");
 
         close(stream_fd);
     }
@@ -590,8 +578,15 @@ NO Thread Safety!
 int service_pool_free(ServicePool* pool){
     pthread_mutex_destroy(&(pool->mutex));
 
+    // Закрытие очереди
     if (mq_close(pool->queue_des) != 0){
         perror("mq_close() in service_pool_free()\n");
+        return EXIT_FAILURE;
+    }
+
+    // Удаление очереди
+    if (mq_unlink(pool->queue_path) == -1) {
+        perror("mq_unlink() in service_pool_free()");
         return EXIT_FAILURE;
     }
     free(pool);

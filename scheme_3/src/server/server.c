@@ -16,7 +16,7 @@
 #include "../../include/server/service_thread.h"
 #include "../../include/server/listener_thread.h"
 
-#define QUEUE_PATH "/server_queue_key_file"
+#define QUEUE_PATH "/server_queue_key_file1"
 
 // Разблокирует блокирующую функию
 void unblock_handler(int signum) {
